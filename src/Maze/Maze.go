@@ -106,7 +106,7 @@ func (m *Maze) RandomNonVisitedNeighbour(pos uint) (uint, uint8, error) {
 
 func (m *Maze) Draw(filename string) {
 	blockSize := 25
-	padding := 3
+	squarePadding := 3
 
 	imgWidth := int(m.W) * blockSize
 	imgHeight := int(m.H) * blockSize
@@ -114,6 +114,8 @@ func (m *Maze) Draw(filename string) {
 	img := image.NewRGBA(image.Rect(0, 0, imgWidth, imgHeight))
 
 	wallColor := color.RGBA{0, 0, 0, 255}
+	wallWidth := 4
+	padding := wallWidth / 2
 
 	src.DrawRect(img, 0, 0, imgWidth, imgHeight, color.White)
 
@@ -123,16 +125,33 @@ func (m *Maze) Draw(filename string) {
 		y := int(block.Pos / m.W)
 
 		if block.Wall&1 == 0 {
-			src.DrawLine(img, x*blockSize, y*blockSize, (x+1)*blockSize, y*blockSize, wallColor)
+			// src.DrawLine(img, x*blockSize, y*blockSize, (x+1)*blockSize, y*blockSize, wallColor)
+			src.DrawRect(img, x*blockSize, y*blockSize-padding, blockSize, wallWidth, wallColor)
 		}
 		if block.Wall&2 == 0 {
-			src.DrawLine(img, (x+1)*blockSize, y*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
+			// src.DrawLine(img, (x+1)*blockSize, y*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
+			src.DrawRect(img, (x+1)*blockSize-padding, y*blockSize, wallWidth, blockSize, wallColor)
 		}
 		if block.Wall&4 == 0 {
-			src.DrawLine(img, x*blockSize, (y+1)*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
+			// src.DrawLine(img, x*blockSize, (y+1)*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
+			src.DrawRect(img, x*blockSize, (y+1)*blockSize-padding, blockSize, wallWidth, wallColor)
 		}
 		if block.Wall&8 == 0 {
-			src.DrawLine(img, x*blockSize, y*blockSize, x*blockSize, (y+1)*blockSize, wallColor)
+			// src.DrawLine(img, x*blockSize, y*blockSize, x*blockSize, (y+1)*blockSize, wallColor)
+			src.DrawRect(img, x*blockSize-padding, y*blockSize, wallWidth, blockSize, wallColor)
+		}
+
+		if block.Wall&1 == 0 && block.Wall&2 == 0 {
+			src.DrawRect(img, (x+1)*blockSize-padding-min(1, padding/2), y*blockSize-padding+min(1, padding/2), wallWidth, wallWidth, wallColor)
+		}
+		if block.Wall&2 == 0 && block.Wall&4 == 0 {
+			src.DrawRect(img, (x+1)*blockSize-padding-min(1, padding/2), (y+1)*blockSize-padding-min(1, padding/2), wallWidth, wallWidth, wallColor)
+		}
+		if block.Wall&4 == 0 && block.Wall&8 == 0 {
+			src.DrawRect(img, x*blockSize-padding+min(1, padding/2), (y+1)*blockSize-padding-min(1, padding/2), wallWidth, wallWidth, wallColor)
+		}
+		if block.Wall&8 == 0 && block.Wall&1 == 0 {
+			src.DrawRect(img, x*blockSize-padding+min(1, padding/2), y*blockSize-padding+min(1, padding/2), wallWidth, wallWidth, wallColor)
 		}
 	}
 
@@ -140,10 +159,10 @@ func (m *Maze) Draw(filename string) {
 	drawCenter := func(block *src.Block, c color.Color) {
 		x := int(block.Pos % m.W)
 		y := int(block.Pos / m.W)
-		startX := x*blockSize + padding
-		startY := y*blockSize + padding
-		endX := (x+1)*blockSize - padding
-		endY := (y+1)*blockSize - padding
+		startX := x*blockSize + squarePadding
+		startY := y*blockSize + squarePadding
+		endX := (x+1)*blockSize - squarePadding
+		endY := (y+1)*blockSize - squarePadding
 
 		for i := startX; i < endX; i++ {
 			for j := startY; j < endY; j++ {

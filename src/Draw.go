@@ -43,8 +43,8 @@ func DrawLine(img *image.RGBA, x1, y1, x2, y2 int, c color.Color) {
 }
 
 func DrawRect(img *image.RGBA, x, y, w, h int, c color.Color) {
-	for Y := y; Y < h; Y++ {
-		for X := x; X < w; X++ {
+	for Y := y; Y < y+h; Y++ {
+		for X := x; X < x+w; X++ {
 			img.Set(X, Y, c)
 		}
 	}
