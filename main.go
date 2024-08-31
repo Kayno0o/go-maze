@@ -8,12 +8,18 @@ func main() {
 	w := uint(16 * 5)
 	h := uint(9 * 5)
 
+	params := &maze.DrawParam{
+		BlockSize:     16,
+		SquarePadding: 2,
+		WallWidth:     4,
+	}
+
 	backtracking := &maze.GrowingTreeMaze{}
 	backtracking.Init(w, h)
 	backtracking.Generate(func(u []uint) int {
 		return 0
 	})
-	backtracking.Draw("assets/backtracking.png")
+	backtracking.Draw("assets/backtracking.png", params)
 
 	// prims := &maze.GrowingTreeMaze{}
 	// prims.Init(w, h)

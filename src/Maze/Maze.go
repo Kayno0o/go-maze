@@ -104,17 +104,40 @@ func (m *Maze) RandomNonVisitedNeighbour(pos uint) (uint, uint8, error) {
 	return 0, 0, fmt.Errorf("no neighbours")
 }
 
-func (m *Maze) Draw(filename string) {
-	blockSize := 25
-	squarePadding := 3
+type DrawParam struct {
+	BlockSize     int
+	SquarePadding int
+	WallColor     color.Color
+	WallWidth     int
+	Rainbow       bool
+}
+
+func (m *Maze) Draw(filename string, params *DrawParam) {
+	blockSize := params.BlockSize
+	if blockSize == 0 {
+		blockSize = 16
+	}
+
+	squarePadding := params.SquarePadding
+	if squarePadding == 0 {
+		squarePadding = 3
+	}
 
 	imgWidth := int(m.W) * blockSize
 	imgHeight := int(m.H) * blockSize
 
 	img := image.NewRGBA(image.Rect(0, 0, imgWidth, imgHeight))
 
-	wallColor := color.RGBA{0, 0, 0, 255}
-	wallWidth := 4
+	wallColor := params.WallColor
+	if wallColor == nil {
+		wallColor = color.Black
+	}
+
+	wallWidth := params.WallWidth
+	if wallWidth == 0 {
+		wallWidth = 1
+	}
+
 	padding := wallWidth / 2
 
 	src.DrawRect(img, 0, 0, imgWidth, imgHeight, color.White)
@@ -124,20 +147,22 @@ func (m *Maze) Draw(filename string) {
 		x := int(block.Pos % m.W)
 		y := int(block.Pos / m.W)
 
+		// Calculate hue based on position
+		if params.Rainbow == true {
+			hue := float64((x + y) % 360)
+			wallColor = src.HueToRGB(hue)
+		}
+
 		if block.Wall&1 == 0 {
-			// src.DrawLine(img, x*blockSize, y*blockSize, (x+1)*blockSize, y*blockSize, wallColor)
 			src.DrawRect(img, x*blockSize, y*blockSize-padding, blockSize, wallWidth, wallColor)
 		}
 		if block.Wall&2 == 0 {
-			// src.DrawLine(img, (x+1)*blockSize, y*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
 			src.DrawRect(img, (x+1)*blockSize-padding, y*blockSize, wallWidth, blockSize, wallColor)
 		}
 		if block.Wall&4 == 0 {
-			// src.DrawLine(img, x*blockSize, (y+1)*blockSize, (x+1)*blockSize, (y+1)*blockSize, wallColor)
 			src.DrawRect(img, x*blockSize, (y+1)*blockSize-padding, blockSize, wallWidth, wallColor)
 		}
 		if block.Wall&8 == 0 {
-			// src.DrawLine(img, x*blockSize, y*blockSize, x*blockSize, (y+1)*blockSize, wallColor)
 			src.DrawRect(img, x*blockSize-padding, y*blockSize, wallWidth, blockSize, wallColor)
 		}
 
@@ -156,23 +181,11 @@ func (m *Maze) Draw(filename string) {
 	}
 
 	// DRAW START/END
-	drawCenter := func(block *src.Block, c color.Color) {
-		x := int(block.Pos % m.W)
-		y := int(block.Pos / m.W)
-		startX := x*blockSize + squarePadding
-		startY := y*blockSize + squarePadding
-		endX := (x+1)*blockSize - squarePadding
-		endY := (y+1)*blockSize - squarePadding
+	startBlock := m.Blocks[rand.Intn(len(m.Blocks))]
+	src.DrawRect(img, int(startBlock.Pos%m.W)*blockSize+squarePadding, int(startBlock.Pos/m.W)*blockSize+squarePadding, blockSize-squarePadding*2, blockSize-squarePadding*2, color.RGBA{0, 200, 255, 255})
 
-		for i := startX; i < endX; i++ {
-			for j := startY; j < endY; j++ {
-				img.Set(i, j, c)
-			}
-		}
-	}
-
-	drawCenter(m.Blocks[rand.Intn(len(m.Blocks))], color.RGBA{0, 200, 255, 255})
-	drawCenter(m.Blocks[rand.Intn(len(m.Blocks))], color.RGBA{255, 200, 0, 255})
+	endBlock := m.Blocks[rand.Intn(len(m.Blocks))]
+	src.DrawRect(img, int(endBlock.Pos%m.W)*blockSize+squarePadding, int(endBlock.Pos/m.W)*blockSize+squarePadding, blockSize-squarePadding*2, blockSize-squarePadding*2, color.RGBA{255, 200, 0, 255})
 
 	// SAVE IMAGE
 	f, err := os.Create(filename)
