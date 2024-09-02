@@ -13,3 +13,6 @@ A maze generator made in go.
 - [ ] maze [aldous-broder](https://weblog.jamisbuck.org/2011/1/17/maze-generation-aldous-broder-algorithm.html)
 - [ ] maze [hunt-and-kill](https://weblog.jamisbuck.org/2011/1/24/maze-generation-hunt-and-kill-algorithm.html)
 - [ ] maze [sidewinder](https://weblog.jamisbuck.org/2011/2/3/maze-generation-sidewinder-algorithm.html)
+
+### Improvements
+- [ ] only right(2⁰) / bottom(2¹) walls on each cells (bitwise operations using 1 uint8, or use 2 bool)
